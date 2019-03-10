@@ -1,8 +1,100 @@
 <!doctype html>
 <html>
-	<style>
-	</style>
-	<body>
-		TODO
-	</body>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Chess</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+      body { background-color: #ecf0f1; }
+      .screen { width: 100%; height: 100vh; }
+      .chessboard.flipped,
+      .chessboard.flipped .white.square,
+      .chessboard.flipped .black.square,
+      .chessboard.flipped .promotion-wrapper {
+        transform: rotate(180deg);
+        -webkit-transform: rotate(180deg);
+      }
+      .chessboard .square {
+        float: left;
+        transition: 0.1s background-color;
+      }
+      .chessboard .white.square {
+      }
+      .chessboard .black.square {
+        background-color: #95a5a6;
+      }
+      .chessboard .selected.black.square { background-color: #27ae60; }
+      .chessboard .selected.white.square { background-color: #2ecc71; }
+
+      .chessboard .opponent.black.square { background-color: #16a085; }
+      .chessboard .opponent.white.square { background-color: #1abc9c; }
+
+      .chessboard .check.black.square { background-color: #c03928; }
+      .chessboard .check.white.square { background-color: #e74c3c; }
+
+      .chessboard .hint.white.square { background-color: #9b59b6; }
+      .chessboard .hint.black.square { background-color: #8e44ad; }
+
+      .chessboard .wP, .chessboard .wB, .chessboard .wN, 
+      .chessboard .wR, .chessboard .wQ, .chessboard .wK,
+      .chessboard .bP, .chessboard .bB, .chessboard .bN, 
+      .chessboard .bR, .chessboard .bQ, .chessboard .bK {
+        background-image: url(chesspieces.svg);
+      }
+      .chessboard .promotion-overlay {
+        display: none;
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+      }
+      .chessboard .promotion-wrapper {
+        margin-left: auto;
+        margin-right: auto;
+        background-color: #fff;
+        text-align: center;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="container lg mx-auto">
+      <div class="screen menu hidden">
+      </div>
+      <div class="screen game w-full h-full">
+        <div class="flex flex-col items-center justify-around w-full h-full">
+          <ul class="list-reset flex flex-wrap">
+            <li class="mr-6">
+              <a class="text-blue hover:text-blue-darker btn-level-0" href="#">Human</a>
+            </li>
+            <li class="mr-6">
+              <a class="text-blue hover:text-blue-darker btn-level-1" href="#">Easy</a>
+            </li>
+            <li class="mr-6">
+              <a class="text-blue hover:text-blue-darker btn-level-2" href="#">Normal</a>
+            </li>
+            <li class="mr-6">
+              <a class="text-blue hover:text-blue-darker btn-level-3" href="#">Hard</a>
+            </li>
+            <li class="mr-6">
+              <a class="text-blue hover:text-blue-darker btn-undo" href="#">Undo</a>
+            </li>
+            <li class="mr-6">
+              <a class="text-blue hover:text-blue-darker btn-swap" href="#">Swap</a>
+            </li>
+            <li class="mr-6">
+              <a class="text-blue hover:text-blue-darker btn-restart" href="#">Restart</a>
+            </li>
+          </ul>
+          <div id="chess-board" class="chess-board"></div>
+        </div>
+      </div>
+    </div>
+    <script src="chess.js"></script>
+    <script src="chessboard.js"></script>
+    <script src="app.js"></script>
+  </body>
 </html>
