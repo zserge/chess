@@ -53,10 +53,6 @@ const board = new ChessBoard('chess-board', {
   },
 });
 
-const ui = () => new Promise(resolve => {
-  uiPromise = resolve;
-});
-
 const stockfish = (() => {
   const wasm = new Worker('stockfish.wasm.js');
   return (fen, moves, level) => new Promise((resolve, reject) => {
@@ -116,11 +112,11 @@ function step() {
         }
       });
     }
-    ui().then(move => {
+    uiPromise = move => {
       chess.move(move);
       render();
       step();
-    });
+    }
   } else {
     let lvl = {
       1: 0,
