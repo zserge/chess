@@ -1,23 +1,18 @@
-'use strict';
-
 window.ChessBoard = function(boardId, config) {
-  var self = this;
+  const self = this;
 
-  var options = {
+  const options = {
     fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
-    resize: true,
     orientation: 'w',
-    minSquareSize: 20,
-    maxSquareSize: 64
   };
 
-  for (var key in config) {
+  for (let key in config) {
     options[key] = config[key];
   }
 
-  var boardBorderWidth, squareSize, boardWidthFix, selectedSquares = [];
-  var board = {};
-  var promotion = {
+  let squareSize, selectedSquares = [];
+  const board = {};
+  const promotion = {
     pieces: [],
     selectedElement: null
   };
@@ -27,7 +22,7 @@ window.ChessBoard = function(boardId, config) {
   }
 
   function createBoard() {
-    var boardElement = document.getElementById(boardId);
+    const boardElement = document.getElementById(boardId);
 
     boardElement.classList.add('chessboard');
 
@@ -37,15 +32,15 @@ window.ChessBoard = function(boardId, config) {
 
     board.element = boardElement;
 
-    for (var r = 8; r >= 1; r--) {
-      var rowElement = document.createElement('div');
+    for (let r = 8; r >= 1; r--) {
+      const rowElement = document.createElement('div');
 
       board[r] = {
         element: rowElement
       };
 
-      for (var c = 0; c < 8; c++) {
-        var squareElement = document.createElement('div');
+      for (let c = 0; c < 8; c++) {
+        const squareElement = document.createElement('div');
         
         if ((r + c) % 2 === 0) {
           squareElement.className = 'white square';
@@ -72,9 +67,9 @@ window.ChessBoard = function(boardId, config) {
   }
 
   function createPromotionPiece(piece) {
-    var pieceElement = document.createElement('div');
+    const pieceElement = document.createElement('div');
 
-    pieceElement.className = 'square ' + piece;
+    pieceElement.className = `square ${piece}`;
     pieceElement.setAttribute('data-piece', piece);
 
     promotion.pieces.push({ piece: piece, element: pieceElement });
@@ -83,13 +78,13 @@ window.ChessBoard = function(boardId, config) {
   }
 
   function createPromotionPieces(color) {
-    var piecesWrapper = document.createElement('div');
+    const piecesWrapper = document.createElement('div');
     piecesWrapper.className = 'pieces';
 
-    piecesWrapper.appendChild(createPromotionPiece(color + 'Q'));
-    piecesWrapper.appendChild(createPromotionPiece(color + 'R'));
-    piecesWrapper.appendChild(createPromotionPiece(color + 'N'));
-    piecesWrapper.appendChild(createPromotionPiece(color + 'B'));
+    piecesWrapper.appendChild(createPromotionPiece(`${color}Q`));
+    piecesWrapper.appendChild(createPromotionPiece(`${color}R`));
+    piecesWrapper.appendChild(createPromotionPiece(`${color}N`));
+    piecesWrapper.appendChild(createPromotionPiece(`${color}B`));
 
     if (color === 'w') {
       promotion.whitePiecesWrapper = piecesWrapper;
@@ -104,19 +99,19 @@ window.ChessBoard = function(boardId, config) {
     createPromotionPieces('b');
 
     // Promote button
-    var promoteButton = document.createElement('button');
-    var promoteButtonText = document.createTextNode('Promote');
+    let promoteButton = document.createElement('button');
+    const promoteButtonText = document.createTextNode('Promote');
 
     promoteButton.appendChild(promoteButtonText);
     promotion.promoteButton = promoteButton;
 
-    var promoteButtonWrapper = document.createElement('div');
+    let promoteButtonWrapper = document.createElement('div');
 
     promoteButtonWrapper.appendChild(promoteButton);
     promotion.promoteButtonWrapper = promoteButtonWrapper;
 
     // Promotion wrapper
-    var promotionWrapper = document.createElement('div');
+    const promotionWrapper = document.createElement('div');
     promotionWrapper.className = 'promotion-wrapper';
 
     promotionWrapper.appendChild(promotion.whitePiecesWrapper);
@@ -126,7 +121,7 @@ window.ChessBoard = function(boardId, config) {
     promotion.wrapper = promotionWrapper;
 
     // Promotion overlay
-    var overlay = document.createElement('div');
+    let overlay = document.createElement('div');
     overlay.className = 'promotion-overlay';
     promotion.overlay = overlay;
 
@@ -134,7 +129,7 @@ window.ChessBoard = function(boardId, config) {
     board.element.appendChild(overlay);
 
     // Set click handlers
-    for (var i = 0, len = promotion.pieces.length; i < len; i++) {
+    for (let i = 0, len = promotion.pieces.length; i < len; i++) {
       promotion.pieces[i].element.addEventListener('click', onPromotionPieceClick);
     }
 
@@ -142,7 +137,7 @@ window.ChessBoard = function(boardId, config) {
   }
 
   function onPromotionPieceClick(event) {
-    var clickedElement = event.target;
+    const clickedElement = event.target;
 
     // Selected piece clicked
     if (clickedElement === promotion.selectedElement) {
@@ -164,8 +159,8 @@ window.ChessBoard = function(boardId, config) {
   }
 
   function onPromotionButtonClick() {
-    var piece = promotion.selectedElement.getAttribute('data-piece');
-    var shortPiece = String.fromCharCode(piece.charCodeAt(1) + 32);
+    const piece = promotion.selectedElement.getAttribute('data-piece');
+    const shortPiece = String.fromCharCode(piece.charCodeAt(1) + 32);
 
     promotion.overlay.style.display = 'none';
 
@@ -175,30 +170,28 @@ window.ChessBoard = function(boardId, config) {
   }
 
   function calcSquareSize() {
-    var parentStyle = getComputedStyle(board.element.parentNode);
-    var parentWidth = parseInt(parentStyle.width) - parseInt(parentStyle.paddingLeft)
-                                                  - parseInt(parentStyle.paddingRight);
+    const parentStyle = getComputedStyle(board.element.parentNode);
+    const parentWidth = parseFloat(parentStyle.width) - parseFloat(parentStyle.paddingLeft)
+                                                  - parseFloat(parentStyle.paddingRight);
     
-    squareSize = Math.floor((parentWidth - 2 * boardBorderWidth) / 8);
-    squareSize = Math.min(squareSize, options.maxSquareSize);
-    squareSize = Math.max(squareSize, options.minSquareSize);
+    squareSize = parentWidth / 8;
   }
 
   function setBoardSize() {
     calcSquareSize();
 
-    var squareSizePx = squareSize + 'px';
-    var rowWidthPx = (8 * squareSize) + 'px';
-    var backgroundSizePx = (6 * squareSize) + 'px';
+    const squareSizePx = `${squareSize}px`;
+    const rowWidthPx = `${8 * squareSize}px`;
+    const backgroundSizePx = `${6 * squareSize}px`;
 
     // Update board elements
-    board.element.style.width = (8 * squareSize) + boardWidthFix + 'px';
+    board.element.style.width = `${8 * squareSize}px`;
 
-    for (var r = 8; r >= 1; r--) {
+    for (let r = 8; r >= 1; r--) {
       board[r].element.style.width = rowWidthPx;
       board[r].element.style.height = squareSizePx;
 
-      for (var c = 0; c < 8; c++) {
+      for (let c = 0; c < 8; c++) {
         board[r][c].element.style.width = squareSizePx;
         board[r][c].element.style.height = squareSizePx;
         board[r][c].element.style.backgroundSize = backgroundSizePx;
@@ -207,16 +200,16 @@ window.ChessBoard = function(boardId, config) {
     }
 
     // Update promotion elements
-    promotion.wrapper.style.width = (4 * squareSize) + 'px';
-    promotion.wrapper.style.height = (2 * squareSize) + 'px';
-    promotion.wrapper.style.marginTop = (3 * squareSize) + 'px';
+    promotion.wrapper.style.width = `${4 * squareSize}px`;
+    promotion.wrapper.style.height = `${2 * squareSize}px`;
+    promotion.wrapper.style.marginTop = `${3 * squareSize}px`;
 
     promotion.whitePiecesWrapper.style.height = squareSizePx;
     promotion.blackPiecesWrapper.style.height = squareSizePx;
 
-    for (var i = 0, len = promotion.pieces.length; i < len; i++) {
-      var piece = promotion.pieces[i].piece;
-      var element = promotion.pieces[i].element;
+    for (let i = 0, len = promotion.pieces.length; i < len; i++) {
+      const piece = promotion.pieces[i].piece;
+      const element = promotion.pieces[i].element;
 
       element.style.width = squareSizePx;
       element.style.height = squareSizePx;
@@ -226,29 +219,29 @@ window.ChessBoard = function(boardId, config) {
 
     promotion.promoteButtonWrapper.style.height = squareSizePx;
     promotion.promoteButtonWrapper.style.lineHeight = squareSizePx;
-    promotion.promoteButton.style.fontSize = squareSize / 2.5 + 'px';
+    promotion.promoteButton.style.fontSize = `${squareSize / 2.5}px`;
   }
 
   function backgroundPosition(piece) {
     switch (piece) {
       case 'wP': return '0 0';
-      case 'wB': return -1 * squareSize + 'px 0';
-      case 'wN': return -2 * squareSize + 'px 0';
-      case 'wR': return -3 * squareSize + 'px 0';
-      case 'wQ': return -4 * squareSize + 'px 0';
-      case 'wK': return -5 * squareSize + 'px 0';
-      case 'bP': return '0 ' + -1 * squareSize + 'px';
-      case 'bB': return -1 * squareSize + 'px ' + -1 * squareSize + 'px';
-      case 'bN': return -2 * squareSize + 'px ' + -1 * squareSize + 'px';
-      case 'bR': return -3 * squareSize + 'px ' + -1 * squareSize + 'px';
-      case 'bQ': return -4 * squareSize + 'px ' + -1 * squareSize + 'px';
-      case 'bK': return -5 * squareSize + 'px ' + -1 * squareSize + 'px';
+      case 'wB': return `${-1 * squareSize}px 0`;
+      case 'wN': return `${-2 * squareSize}px 0`;
+      case 'wR': return `${-3 * squareSize}px 0`;
+      case 'wQ': return `${-4 * squareSize}px 0`;
+      case 'wK': return `${-5 * squareSize}px 0`;
+      case 'bP': return `0 ${-1 * squareSize}px`;
+      case 'bB': return `${-1 * squareSize}px ${-1 * squareSize}px`;
+      case 'bN': return `${-2 * squareSize}px ${-1 * squareSize}px`;
+      case 'bR': return `${-3 * squareSize}px ${-1 * squareSize}px`;
+      case 'bQ': return `${-4 * squareSize}px ${-1 * squareSize}px`;
+      case 'bK': return `${-5 * squareSize}px ${-1 * squareSize}px`;
     }
   }
 
   function getBoardSquare(square) {
-    var c = square[0].charCodeAt(0) - 97;
-    var r = +square[1];
+    const c = square[0].charCodeAt(0) - 97;
+    const r = +square[1];
 
     return board[r][c];
   }
@@ -258,28 +251,28 @@ window.ChessBoard = function(boardId, config) {
       return;
     }
 
-    var boardSquare = getBoardSquare(square);
+    const boardSquare = getBoardSquare(square);
 
     boardSquare.element.classList.add('selected');
     selectedSquares.push(square);
   };
 
   this.unselectSquare = function(square) {
-    var index = selectedSquares.indexOf(square);
+    const index = selectedSquares.indexOf(square);
 
     if (index === -1) {
       return;
     }
 
-    var boardSquare = getBoardSquare(square);
+    const boardSquare = getBoardSquare(square);
 
     boardSquare.element.classList.remove('selected');
     selectedSquares.splice(index, 1);
   };
 
   this.unselectAllSquares = function() {
-    for (var i = 0, len = selectedSquares.length; i < len; i++) {
-      var boardSquare = getBoardSquare(selectedSquares[i]);
+    for (let i = 0, len = selectedSquares.length; i < len; i++) {
+      const boardSquare = getBoardSquare(selectedSquares[i]);
 
       boardSquare.element.classList.remove('selected');
     }
@@ -288,14 +281,14 @@ window.ChessBoard = function(boardId, config) {
   };
 
   function onSquareClick(event) {
-    var clickedSquare = event.target.getAttribute('data-square');
+    const clickedSquare = event.target.getAttribute('data-square');
 
     options.onSquareClick(clickedSquare, selectedSquares);
   }
 
   function clearSquare(square) {
-    var boardSquare = getBoardSquare(square);
-    var piece = boardSquare.piece;
+    const boardSquare = getBoardSquare(square);
+    let piece = boardSquare.piece;
 
     if (piece !== null) {
       boardSquare.element.classList.remove(piece);
@@ -304,17 +297,9 @@ window.ChessBoard = function(boardId, config) {
     boardSquare.piece = null;
   }
 
-  function repeatChar(char, count) {
-    for (var result = ''; result.length < count;) {
-      result += char;
-    }
-
-    return result;
-  }
-
   function putPiece(square, piece) {
-    var boardSquare = getBoardSquare(square);
-    var currentPiece = boardSquare.piece;
+    const boardSquare = getBoardSquare(square);
+    const currentPiece = boardSquare.piece;
 
     if (currentPiece !== null) {
       boardSquare.element.classList.remove(currentPiece);
@@ -326,26 +311,26 @@ window.ChessBoard = function(boardId, config) {
   }
 
   function calcPieceFromFenPiece(fenPiece) {
-    var fenPieceCharCode = fenPiece.charCodeAt(0);
+    const fenPieceCharCode = fenPiece.charCodeAt(0);
 
     if (fenPieceCharCode >= 97) { // Black
-      return 'b' + String.fromCharCode(fenPieceCharCode - 32);
+      return `b${String.fromCharCode(fenPieceCharCode - 32)}`;
     } else { // White
-      return 'w' + fenPiece;
+      return `w${fenPiece}`;
     }
   }
 
   this.setPosition = function(fen) {
-    var fenFields = fen.split(' ');
-    var rows = fenFields[0].split('/');
+    const fenFields = fen.split(' ');
+    const rows = fenFields[0].split('/');
 
-    for (var r = 0; r < 8; r++) {
-      rows[r] = rows[r].replace(/\d/g, function(number) { 
-        return repeatChar('.', +number);
+    for (let r = 0; r < 8; r++) {
+      rows[r] = rows[r].replace(/\d/g, number => { 
+        return '.'.repeat(number);
       });
 
-      for (var c = 0; c < 8; c++) {
-        var square = calcSquare(8 - r, c);
+      for (let c = 0; c < 8; c++) {
+        const square = calcSquare(8 - r, c);
 
         if (rows[r][c] === '.') {
           clearSquare(square);
@@ -358,8 +343,8 @@ window.ChessBoard = function(boardId, config) {
 
   this.askPromotion = function(color, callback) {
     promotion.callback = callback;
-    promotion.whitePiecesWrapper.style.display = (color === 'w' ? 'block' : 'none');
-    promotion.blackPiecesWrapper.style.display = (color === 'b' ? 'block' : 'none');
+    promotion.whitePiecesWrapper.style.display = color === 'w' ? 'block' : 'none';
+    promotion.blackPiecesWrapper.style.display = color === 'b' ? 'block' : 'none';
 
     promotion.promoteButton.disabled = true;
 
@@ -375,24 +360,10 @@ window.ChessBoard = function(boardId, config) {
   createBoard();
   createPromotion();
 
-  setTimeout(function() { // Without setTimeout, boxSizing is not set yet.
-    var boardStyle = getComputedStyle(board.element);
-
-    // Assumption: all 4 borders have the same width
-    boardBorderWidth = parseInt(boardStyle.borderTopWidth);
-
-    if (boardStyle.boxSizing === 'border-box') {
-      boardWidthFix = 2 * boardBorderWidth;
-    } else  {
-      boardWidthFix = 0;
-    }
-
+  setTimeout(() => { // Without setTimeout, boxSizing is not set yet.
     setBoardSize();
-    
     self.setPosition(options.fen);
   });
 
-  if (options.resize) {
-    window.addEventListener('resize', setBoardSize);
-  }
+  window.addEventListener('resize', setBoardSize);
 };

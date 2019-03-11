@@ -10,7 +10,6 @@ if (localStorage.getItem('pgn')) {
 
 const board = new ChessBoard('chess-board', {
   fen: chess.fen(),
-  maxSquareSize: 96,
   onSquareClick: (sq, sel) => {
     if (!uiPromise) {
       return;
@@ -133,10 +132,11 @@ function step() {
   }
 }
 
-document.querySelector('.btn-level-0').onclick = () => level = 0;
-document.querySelector('.btn-level-1').onclick = () => level = (side === 'w' ? 1 : -1);
-document.querySelector('.btn-level-2').onclick = () => level = (side === 'w' ? 2 : -2);
-document.querySelector('.btn-level-3').onclick = () => level = (side === 'w' ? 3 : -3);
+//document.querySelector('.btn-level-0').onclick = () => level = 0;
+//document.querySelector('.btn-level-1').onclick = () => level = (side === 'w' ? 1 : -1);
+//document.querySelector('.btn-level-2').onclick = () => level = (side === 'w' ? 2 : -2);
+//document.querySelector('.btn-level-3').onclick = () => level = (side === 'w' ? 3 : -3);
+
 document.querySelector('.btn-swap').onclick = () => {
   side = (side === 'w' ? 'b' : 'w');
   if (side === 'w') {
