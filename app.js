@@ -3,6 +3,8 @@ let level = 1;
 let side = 'w';
 let showHints = true;
 
+const wasm = new Worker('stockfish.wasm.js');
+
 const chess = new Chess();
 if (localStorage.getItem('pgn')) {
   chess.load_pgn(localStorage.getItem('pgn'));
@@ -19,6 +21,7 @@ const board = new ChessBoard('chess-board', {
     if (sel.length === 0) {
       const moves = chess.moves({square: sq, verbose: true});
       if (moves.length > 0) {
+        wasm.postMessage('stop');
         document.querySelectorAll('.opponent').forEach(el => el.classList.remove('opponent'));
         document.querySelectorAll('.hint').forEach(el => el.classList.remove('hint'));
         board.selectSquare(sq);
@@ -53,36 +56,33 @@ const board = new ChessBoard('chess-board', {
   },
 });
 
-const stockfish = (() => {
-  const wasm = new Worker('stockfish.wasm.js');
-  return (fen, moves, level) => new Promise((resolve, reject) => {
-    wasm.onmessage = (e) => {
-      if (!e || !e.data) {
-        return;
-      }
-      let best = e.data.match(/^bestmove ([a-h][1-8])([a-h][1-8])([qrbk])?/)
-      if (best) {
-        let from = best[1];
-        let to = best[2];
-        for (let i = 0; i < moves.length; i++) {
-          if (moves[i].from == from && moves[i].to == to) {
-            resolve(moves[i]);
-            return;
-          }
+const stockfish = (fen, moves, level) => new Promise((resolve, reject) => {
+  wasm.onmessage = (e) => {
+    if (!e || !e.data) {
+      return;
+    }
+    let best = e.data.match(/^bestmove ([a-h][1-8])([a-h][1-8])([qrbk])?/)
+    if (best) {
+      let from = best[1];
+      let to = best[2];
+      for (let i = 0; i < moves.length; i++) {
+        if (moves[i].from == from && moves[i].to == to) {
+          resolve(moves[i]);
+          return;
         }
-        resolve();
       }
-    };
-    const skill = Math.max(0, Math.min(level, 20));
-    const errorProbability = Math.round((skill * 6.35) + 1);
-    const maxError = Math.round((skill * -0.5) + 10);
-    wasm.postMessage(`position fen ${fen}`);
-    wasm.postMessage(`setoption name Skill Level value ${skill}`);
-    wasm.postMessage(`setoption name Skill Level Maximum Error value ${maxError}`);
-    wasm.postMessage(`setoption name Skill Level Probability value ${errorProbability}`);
-    wasm.postMessage('go movetime 500');
-  });
-})();
+      resolve();
+    }
+  };
+  const skill = Math.max(0, Math.min(level, 20));
+  const errorProbability = Math.round((skill * 6.35) + 1);
+  const maxError = Math.round((skill * -0.5) + 10);
+  wasm.postMessage(`position fen ${fen}`);
+  wasm.postMessage(`setoption name Skill Level value ${skill}`);
+  wasm.postMessage(`setoption name Skill Level Maximum Error value ${maxError}`);
+  wasm.postMessage(`setoption name Skill Level Probability value ${errorProbability}`);
+  wasm.postMessage('go movetime 500');
+});
 
 function render() {
   board.setPosition(chess.fen());
