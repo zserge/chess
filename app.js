@@ -47,8 +47,9 @@ const board = new ChessBoard('chess-board', {
     }
 
     document.querySelectorAll('.hint').forEach(el => el.classList.remove('hint'));
-    uiPromise(move[0]);
+    const p = uiPromise;
     uiPromise = undefined;
+    p(move[0]);
   },
 });
 
@@ -92,17 +93,20 @@ function render() {
   } else {
     document.querySelectorAll('.check').forEach(el => el.classList.remove('check'));
   }
-  console.log(chess.pgn());
   localStorage.setItem('pgn', chess.pgn());
 }
 
 function step() {
   if (chess.game_over()) {
-    console.log('game over');
+    dialog('game-over', (restart) => {
+      if (restart) {
+        restartGame();
+      }
+    });
     return;
   }
   let move;
-  if ((chess.turn() === 'w' && level >= 0) || (chess.turn() === 'b' && level <= 0)) {
+  if (chess.turn() === side || level === 0) {
     if (showHints && chess.fen() !== 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1') {
       const startFEN = chess.fen();
       stockfish(chess.fen(), chess.moves({verbose: true}), 10).then(hint => {
@@ -121,7 +125,7 @@ function step() {
       1: 0,
       2: 7,
       3: 20,
-    }[Math.abs(level)];
+    }[level];
     stockfish(chess.fen(), chess.moves({verbose: true}), lvl).then(move => {
       chess.move(move);
       render();
@@ -132,10 +136,54 @@ function step() {
   }
 }
 
-//document.querySelector('.btn-level-0').onclick = () => level = 0;
-//document.querySelector('.btn-level-1').onclick = () => level = (side === 'w' ? 1 : -1);
-//document.querySelector('.btn-level-2').onclick = () => level = (side === 'w' ? 2 : -2);
-//document.querySelector('.btn-level-3').onclick = () => level = (side === 'w' ? 3 : -3);
+function dialog(content, cb) {
+  const overlay = document.querySelector('.overlay');
+  const dialog = overlay.querySelector('.dialog');
+  const hide = () => {
+    overlay.style.display = 'none';
+    dialog.querySelectorAll('.dialog-content').forEach(el => {
+      el.style.display = 'none';
+    })
+  };
+  overlay.style.display = 'flex';
+  dialog.querySelectorAll('.dialog-content').forEach(el => {
+    el.style.display = 'none';
+  })
+  overlay.onclick = () => {
+    cb();
+    hide();
+  };
+  dialog.querySelector(`.dialog-content-${content}`).style.display = 'block';
+  dialog.querySelectorAll('.dialog-button').forEach(el => {
+    el.onclick = () => {
+      cb(el.getAttribute('data-dialog'));
+      hide();
+    }
+  });
+}
+
+function undoLastStep() {
+  chess.undo();
+  chess.undo();
+  render();
+  step();
+}
+
+function restartGame() {
+  chess.reset();
+  render();
+  step();
+}
+
+document.querySelector('.btn-level').onclick = () => dialog('level', (n) => {
+  if (n) {
+    if (n === 'human') {
+      level = 0;
+    } else {
+      level = +n;
+    }
+  }
+});
 
 document.querySelector('.btn-swap').onclick = () => {
   side = (side === 'w' ? 'b' : 'w');
@@ -144,20 +192,14 @@ document.querySelector('.btn-swap').onclick = () => {
   } else {
     document.querySelector('.chessboard').classList.add('flipped');
   }
-  level = (side === 'w' ? 1 : -1) * Math.abs(level);
   render();
   step();
 }
-document.querySelector('.btn-undo').onclick = () => {
-  chess.undo();
-  chess.undo();
-  render();
-  step();
-}
-document.querySelector('.btn-restart').onclick = () => {
-  chess.reset();
-  render();
-  step();
-};
+document.querySelector('.btn-undo').onclick = () => undoLastStep();
+document.querySelector('.btn-restart').onclick = () => dialog('restart', restart => {
+  if (restart) {
+    restartGame();
+  }
+});
 
 step();

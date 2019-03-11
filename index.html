@@ -29,6 +29,13 @@
         .container { flex-direction: row; }
         .toolbar { flex-direction: column; }
       }
+      /* Dialogs */
+      .overlay { position: fixed; z-index: 1; top: 0; left: 0; bottom: 0; right: 0; background-color: rgba(0, 0, 0, 0.3); display: none; }
+      .dialog {
+        background-color: #fff;
+        padding: 5vmin;
+        width: 80vw;
+      }
 
       .chessboard.flipped,
       .chessboard.flipped .white.square,
@@ -79,7 +86,6 @@
         background-color: #fff;
         text-align: center;
       }
-
     </style>
   </head>
   <body>
@@ -95,6 +101,36 @@
         <a class="btn btn-swap">S</a>
         <a class="btn btn-restart">R</a>
         <a class="btn btn-info">I</a>
+      </div>
+    </div>
+    <div class="overlay flex flex-col items-center justify-center">
+      <div class="dialog">
+        <div class="dialog-content dialog-content-level">
+          <h1>Level</h1>
+          <div>
+            <a class="btn dialog-button" data-dialog="human">Human</a>
+            <a class="btn dialog-button" data-dialog="1">Easy</a>
+            <a class="btn dialog-button" data-dialog="2">Normal</a>
+            <a class="btn dialog-button" data-dialog="3">Hard</a>
+          </div>
+        </div>
+        <div class="dialog-content dialog-content-promotion">
+          <h1>Promote</h1>
+          <div>
+          </div>
+        </div>
+        <div class="dialog-content dialog-content-game-over">
+          <h1>Game over</h1>
+          <p>Game over. Would you like to start new one?</p>
+          <a class="btn dialog-button" data-dialog="restart">Y</a>
+          <a class="btn dialog-button" data-dialog="">N</a>
+        </div>
+        <div class="dialog-content dialog-content-restart">
+          <h1>Resign and start again?</h1>
+          <p>Your current game will be lost</p>
+          <a class="btn dialog-button" data-dialog="restart">Y</a>
+          <a class="btn dialog-button" data-dialog="">N</a>
+        </div>
       </div>
     </div>
     <script src="chess.js"></script>
