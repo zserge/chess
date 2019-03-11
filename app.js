@@ -59,16 +59,15 @@ const ui = () => new Promise(resolve => {
 
 const stockfish = (() => {
   const wasm = new Worker('stockfish.wasm.js');
-  return (fen, moves, timeout, variants) => new Promise((resolve, reject) => {
-    let pv = [];
+  return (fen, moves, level) => new Promise((resolve, reject) => {
     wasm.onmessage = (e) => {
-      if (!e) {
+      if (!e || !e.data) {
         return;
       }
-      let best = e.data.match(/^bestmove (\S+).*$/);
+      let best = e.data.match(/^bestmove ([a-h][1-8])([a-h][1-8])([qrbk])?/)
       if (best) {
-        let from = pv[1].substring(0, 2);
-        let to = pv[1].substring(2, 4);
+        let from = best[1];
+        let to = best[2];
         for (let i = 0; i < moves.length; i++) {
           if (moves[i].from == from && moves[i].to == to) {
             resolve(moves[i]);
@@ -77,14 +76,15 @@ const stockfish = (() => {
         }
         resolve();
       }
-      let info = e.data.match(/^info.*multipv (\d+) .*pv ([a-h1-8]+)/);
-      if (info) {
-        pv[info[1]] = info[2];
-      }
     };
-    wasm.postMessage('position fen ' + fen);
-    wasm.postMessage('setoption name MultiPV value ' + variants);
-    wasm.postMessage('go movetime ' + timeout);
+    const skill = Math.max(0, Math.min(level, 20));
+    const errorProbability = Math.round((skill * 6.35) + 1);
+    const maxError = Math.round((skill * -0.5) + 10);
+    wasm.postMessage(`position fen ${fen}`);
+    wasm.postMessage(`setoption name Skill Level value ${skill}`);
+    wasm.postMessage(`setoption name Skill Level Maximum Error value ${maxError}`);
+    wasm.postMessage(`setoption name Skill Level Probability value ${errorProbability}`);
+    wasm.postMessage('go movetime 500');
   });
 })();
 
@@ -110,7 +110,7 @@ function step() {
   if ((chess.turn() === 'w' && level >= 0) || (chess.turn() === 'b' && level <= 0)) {
     if (showHints && chess.fen() !== 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1') {
       const startFEN = chess.fen();
-      stockfish(chess.fen(), chess.moves({verbose: true}), 500, 1).then(hint => {
+      stockfish(chess.fen(), chess.moves({verbose: true}), 10).then(hint => {
         if (hint && chess.fen() === startFEN) {
           document.querySelector(`[data-square='${hint.from}']`).classList.add('hint');
         }
@@ -122,8 +122,12 @@ function step() {
       step();
     });
   } else {
-    let timeout = 500;
-    stockfish(chess.fen(), chess.moves({verbose: true}), timeout, 1).then(move => {
+    let lvl = {
+      1: 0,
+      2: 7,
+      3: 20,
+    }[Math.abs(level)];
+    stockfish(chess.fen(), chess.moves({verbose: true}), lvl).then(move => {
       chess.move(move);
       render();
       document.querySelector(`[data-square='${move.from}']`).classList.add('opponent');
