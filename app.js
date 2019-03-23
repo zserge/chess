@@ -10,37 +10,49 @@ if (localStorage.getItem('pgn')) {
   chess.load_pgn(localStorage.getItem('pgn'));
 }
 
-const board = new ChessBoard('chess-board', {
-  fen: chess.fen(),
-  onSquareClick: (sq, sel) => {
+let from;
+
+const board = new ChessBoard(
+  document.querySelector('.chessboard'),
+  ['selected', 'opponent-from', 'opponent-to', 'moves', 'hint'],
+  (sq) => {
+    // If UI move is not expected - ignore clicks
     if (!uiPromise) {
       return;
     }
 
     // On first click: select square if it's a valid move
-    if (sel.length === 0) {
+    if (!from) {
       const moves = chess.moves({square: sq, verbose: true});
       if (moves.length > 0) {
+        from = sq;
         wasm.postMessage('stop');
-        document.querySelectorAll('.opponent').forEach(el => el.classList.remove('opponent'));
-        document.querySelectorAll('.hint').forEach(el => el.classList.remove('hint'));
-        board.selectSquare(sq);
-        moves.forEach(m => board.selectSquare(m.to));
+        board.unmarkAll();
+        board.mark(sq, 'selected');
+        moves.forEach(m => board.mark(m.to, 'moves'));
+        board.render();
       }
       return;
     }
     // On second click on the same square: unselect it
-    const from = sel[0];
     if (sq === from) {
-      board.unselectAllSquares(sq);
+      from = undefined;
+      board.unmarkAll();
+      board.render();
       return;
     }
-    board.unselectAllSquares(from);
     // If second click is not the same square, but another piece: select it
     const clickedPiece = chess.get(sq);
     const selectedPiece = chess.get(from);
     if (clickedPiece && (clickedPiece.color === selectedPiece.color)) {
-      board.selectSquare(sq);
+      const moves = chess.moves({square: sq, verbose: true});
+      if (moves.length > 0) {
+        from = sq;
+        board.unmarkAll();
+        board.mark(sq, 'selected');
+        moves.forEach(m => board.mark(m.to, 'moves'));
+        board.render();
+      }
       return;
     }
     // Check if move is legal
@@ -49,12 +61,14 @@ const board = new ChessBoard('chess-board', {
       return;
     }
 
-    document.querySelectorAll('.hint').forEach(el => el.classList.remove('hint'));
+    board.unmarkAll();
     const p = uiPromise;
     uiPromise = undefined;
     p(move[0]);
   },
-});
+);
+board.render(chess.fen());
+window.addEventListener('resize', () => board.render());
 
 const stockfish = (fen, moves, level) => new Promise((resolve, reject) => {
   wasm.onmessage = (e) => {
@@ -84,19 +98,9 @@ const stockfish = (fen, moves, level) => new Promise((resolve, reject) => {
   wasm.postMessage('go movetime 500');
 });
 
-function render() {
-  board.setPosition(chess.fen());
-  document.querySelectorAll('.opponent').forEach(el => el.classList.remove('opponent'));
-  document.querySelectorAll('.hint').forEach(el => el.classList.remove('hint'));
-  if (chess.in_check()) {
-    document.querySelector(`.${chess.turn()}K`).classList.add('check');
-  } else {
-    document.querySelectorAll('.check').forEach(el => el.classList.remove('check'));
-  }
-  localStorage.setItem('pgn', chess.pgn());
-}
-
 function step() {
+  board.render(chess.fen());
+  localStorage.setItem('pgn', chess.pgn());
   if (chess.game_over()) {
     dialog('game-over', (restart) => {
       if (restart) {
@@ -109,15 +113,16 @@ function step() {
   if (chess.turn() === side || level === 0) {
     if (showHints && chess.fen() !== 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1') {
       const startFEN = chess.fen();
-      stockfish(chess.fen(), chess.moves({verbose: true}), 10).then(hint => {
+      stockfish(chess.fen(), chess.moves({verbose: true}), 20).then(hint => {
         if (hint && chess.fen() === startFEN) {
-          document.querySelector(`[data-square='${hint.from}']`).classList.add('hint');
+          board.mark(hint.from, 'hint');
+          board.render();
         }
       });
     }
+    from = undefined;
     uiPromise = move => {
       chess.move(move);
-      render();
       step();
     }
   } else {
@@ -128,9 +133,9 @@ function step() {
     }[level];
     stockfish(chess.fen(), chess.moves({verbose: true}), lvl).then(move => {
       chess.move(move);
-      render();
-      document.querySelector(`[data-square='${move.from}']`).classList.add('opponent');
-      document.querySelector(`[data-square='${move.to}']`).classList.add('opponent');
+      board.mark(move.from, 'opponent-from');
+      board.mark(move.to, 'opponent-to');
+      board.render();
       step();
     });
   }
@@ -163,15 +168,15 @@ function dialog(content, cb) {
 }
 
 function undoLastStep() {
+  board.unmarkAll();
   chess.undo();
   chess.undo();
-  render();
   step();
 }
 
 function restartGame() {
+  board.unmarkAll();
   chess.reset();
-  render();
   step();
 }
 
@@ -192,7 +197,7 @@ document.querySelector('.btn-swap').onclick = () => {
   } else {
     document.querySelector('.chessboard').classList.add('flipped');
   }
-  render();
+  board.unmarkAll();
   step();
 }
 document.querySelector('.btn-undo').onclick = () => undoLastStep();
