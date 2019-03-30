@@ -1,0 +1,15 @@
+{
+  "short_name": "Chess",
+  "name": "Chess",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "48x48 72x72 96x96 144x144 192x192 256x256 512x512"
+    }
+  ],
+  "start_url": "./",
+  "display": "standalone",
+  "theme_color": "#db2f27",
+  "background_color": "#ecf0f1"
+}
+

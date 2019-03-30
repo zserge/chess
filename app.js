@@ -1,3 +1,8 @@
+// PWA
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+
 let uiPromise;
 let level = 1;
 let side = 'w';
@@ -208,3 +213,4 @@ document.querySelector('.btn-restart').onclick = () => dialog('restart', restart
 });
 
 step();
+
