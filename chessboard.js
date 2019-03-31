@@ -1,7 +1,6 @@
 class ChessBoard {
-  constructor(el, marks, cb) {
+  constructor(el, marks) {
     this.el = el;
-    this.cb = cb;
     this.squareSize = 0;
     this.board = {};
     this.marks = {};
@@ -19,7 +18,7 @@ class ChessBoard {
         square.classList.add('square');
         square.classList.add(`square-${coord}`);
         square.style.position = 'relative';
-        square.onclick = () => cb(coord, square);
+        square.onclick = () => this.onclick(coord, square);
 
         this.board[r][c] = { el: square, marks: {} };
 
@@ -113,4 +112,5 @@ class ChessBoard {
       }
     }
   }
+  onclick(coord, square) {} // This is expected to be overridden
 }

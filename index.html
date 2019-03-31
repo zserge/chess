@@ -38,13 +38,15 @@
         .toolbar { flex-direction: column; }
       }
       /* Dialogs */
-      .overlay { position: fixed; z-index: 1; top: 0; left: 0; bottom: 0; right: 0; background-color: rgba(0, 0, 0, 0.3); display: none; }
+      .overlay { position: fixed; z-index: 1; top: 0; left: 0; bottom: 0; right: 0; background-color: rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; }
       .dialog {
         background-color: #fff;
         padding: 5vmin;
         width: 80vw;
       }
       .dialog .btn { padding: 0 24px; height: 48px; min-width: 96px; line-height: 48px; text-align: center; border-radius: 4px; border: 1px solid #bbb; display: inline-block; }
+
+      .levels .selected { font-weight: bold; }
 
       /* Chess board */
       .chessboard.flipped, .chessboard.flipped .square {
@@ -53,7 +55,7 @@
 
       .chessboard .row:nth-child(odd) .square:nth-child(even), 
       .chessboard .row:nth-child(even) .square:nth-child(odd) {
-        background-color: #95a5a6;
+        background-color: #bdc3c7;
       }
       .chessboard .row:nth-child(even) .square:nth-child(even), 
       .chessboard .row:nth-child(odd) .square:nth-child(odd) {
@@ -69,10 +71,10 @@
       }
       .chessboard .selected, .chessboard .moves { background-color: #27ae60; }
       .chessboard .moves, .chessboard .opponent-from {
-        left: 25%;
-        top: 25%;
-        width: 50%;
-        height: 50%;
+        left: 35%;
+        top: 35%;
+        width: 30%;
+        height: 30%;
         border-radius: 50%;
       }
       .chessboard .opponent-from, .chessboard .opponent-to { background-color: #16a085; }
@@ -95,34 +97,41 @@
         <a class="btn btn-info"></a>
       </div>
     </div>
-    <div class="overlay flex flex-col items-center justify-center">
-      <div class="dialog">
-        <div class="dialog-content dialog-content-level">
-          <h1>Level</h1>
-          <div>
-            <a class="btn dialog-button" data-dialog="human">Human</a>
-            <a class="btn dialog-button" data-dialog="1">Easy</a>
-            <a class="btn dialog-button" data-dialog="2">Normal</a>
-            <a class="btn dialog-button" data-dialog="3">Hard</a>
-          </div>
+
+    <!-- dialog templates -->
+    <div style="display:none">
+      <div class="dialog-content dialog-content-level">
+        <h1>Level</h1>
+        <div class="levels">
+          <a class="btn level-human">Human</a>
+          <a class="btn level-easy">Easy</a>
+          <a class="btn level-normal">Normal</a>
+          <a class="btn level-hard">Hard</a>
+          <a class="btn level-extreme">Extreme</a>
         </div>
-        <div class="dialog-content dialog-content-promotion">
-          <h1>Promote</h1>
-          <div>
-          </div>
+        <div>
+          <label>Show hints<input type="checkbox" class="show-hints"></label>
         </div>
-        <div class="dialog-content dialog-content-game-over">
-          <h1>Game over</h1>
-          <p>Game over. Would you like to start new one?</p>
-          <a class="btn dialog-button" data-dialog="restart">Y</a>
-          <a class="btn dialog-button" data-dialog="">N</a>
+        <div>
+          <a class="btn dialog-button-ok">OK</a>
         </div>
-        <div class="dialog-content dialog-content-restart">
-          <h1>Start again?</h1>
-          <p>Your current game will be lost</p>
-          <a class="btn dialog-button" data-dialog="restart">Y</a>
-          <a class="btn dialog-button" data-dialog="">N</a>
+      </div>
+      <div class="dialog-content dialog-content-promotion">
+        <h1>Promote</h1>
+        <div>
         </div>
+      </div>
+      <div class="dialog-content dialog-content-game-over">
+        <h1>Game over</h1>
+        <p>Game over. Would you like to start new one?</p>
+        <a class="btn dialog-button-ok">Yes</a>
+        <a class="btn dialog-button-cancel">No</a>
+      </div>
+      <div class="dialog-content dialog-content-restart">
+        <h1>Start again?</h1>
+        <p>Your current game will be lost</p>
+        <a class="btn dialog-button dialog-button-ok">Yes</a>
+        <a class="btn dialog-button dialog-button-cancel">No</a>
       </div>
     </div>
     <script src="chess.js"></script>
